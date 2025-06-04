@@ -20,7 +20,8 @@ def move_file_interactive(
         "2": "Documents",
         "3": "Music",
         "4": "Torrent files",
-        "5": "Executable files"
+        "5": "Executable files",
+        "6": "Archive files"
     }
 
     # Создаем папки назначения, если их нет
@@ -41,8 +42,14 @@ def move_file_interactive(
     file_num = int(input_func("Выберите номер файла: ")) - 1
     file_to_move = files[file_num]
 
-    print_func("Куда переместить? 1 - Images, 2 - Documents, 3 - Music, 4 - Torrent files, 5 - Executable files")
-    folder_num = input_func("Введите номер папки: ")
+    print_func("Куда переместить? "
+               "1 - Images, "
+               "2 - Documents, "
+               "3 - Music, "
+               "4 - Torrent files, "
+               "5 - Executable files, "
+               "6 - Archive files")
+    folder_num = "Введите номер папки: "
 
     # Проверка на корректность номера папки
     if folder_num not in dest_folders:
