@@ -6,6 +6,7 @@ pytest — основной тестовый фреймворк.
 from file_mover import move_file_interactive — импорт тестируемой функции из модуля,
 где находится логика перемещения файлов.
 """
+
 import os
 import tempfile
 import pytest
@@ -28,7 +29,7 @@ def test_move_txt_file_to_documents():
         move_file_interactive(
             folder_path=temp_dir,
             input_func=lambda _: next(inputs),
-            print_func=lambda msg: outputs.append(msg)
+            print_func=lambda msg: outputs.append(msg),
         )
 
         dest_path = os.path.join(temp_dir, "Documents", test_filename)
@@ -55,7 +56,7 @@ def test_create_destination_folders():
         move_file_interactive(
             folder_path=temp_dir,
             input_func=lambda _: next(inputs),
-            print_func=lambda msg: outputs.append(msg)
+            print_func=lambda msg: outputs.append(msg),
         )
 
         dest_folder = os.path.join(temp_dir, "Music")
@@ -81,5 +82,5 @@ def test_invalid_folder_number():
             move_file_interactive(
                 folder_path=temp_dir,
                 input_func=lambda _: next(inputs),
-                print_func=lambda msg: None
+                print_func=lambda msg: None,
             )

@@ -6,7 +6,7 @@ from typing import Callable
 def move_file_interactive(
     folder_path: str,
     input_func: Callable[[str], str] = input,
-    print_func: Callable[[str], None] = print
+    print_func: Callable[[str], None] = print,
 ) -> None:
     """
     Перемещает выбранный пользователем файл из указанной папки в одну из целевых категорий.
@@ -21,7 +21,7 @@ def move_file_interactive(
         "3": "Music",
         "4": "Torrent files",
         "5": "Executable files",
-        "6": "Archive files"
+        "6": "Archive files",
     }
 
     # Создаем папки назначения, если их нет
@@ -29,7 +29,11 @@ def move_file_interactive(
         os.makedirs(os.path.join(folder_path, folder), exist_ok=True)
 
     # Получаем список файлов в указанной папке
-    files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+    files = [
+        f
+        for f in os.listdir(folder_path)
+        if os.path.isfile(os.path.join(folder_path, f))
+    ]
     if not files:
         print_func("Нет доступных файлов для перемещения.")
         return
@@ -42,13 +46,15 @@ def move_file_interactive(
     file_num = int(input_func("Выберите номер файла: ")) - 1
     file_to_move = files[file_num]
 
-    print_func("Куда переместить? "
-               "1 - Images, "
-               "2 - Documents, "
-               "3 - Music, "
-               "4 - Torrent files, "
-               "5 - Executable files, "
-               "6 - Archive files")
+    print_func(
+        "Куда переместить? "
+        "1 - Images, "
+        "2 - Documents, "
+        "3 - Music, "
+        "4 - Torrent files, "
+        "5 - Executable files, "
+        "6 - Archive files"
+    )
     folder_num = "Введите номер папки: "
 
     # Проверка на корректность номера папки
@@ -64,7 +70,7 @@ def move_file_interactive(
 
 
 if __name__ == "__main__":
-    # Пример: путь по умолчанию — загрузки текущего пользователя (можно изменить)
+    # Пример: путь по умолчанию — загрузки текущего пользователя (можно изменить на свой путь)
     default_download_path = os.path.join(os.path.expanduser("~"), "Downloads")
     print(f"Используется папка: {default_download_path}")
     move_file_interactive(default_download_path)
