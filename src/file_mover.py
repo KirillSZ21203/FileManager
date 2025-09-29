@@ -1,12 +1,13 @@
 import os
+import time
 import shutil
 from typing import Callable
 
 
 def add_custom_folders(
-    base_path: str,
-    input_func: Callable[[str], str] = input,
-    print_func: Callable[[str], None] = print,
+        base_path: str,
+        input_func: Callable[[str], str] = input,
+        print_func: Callable[[str], None] = print,
 ) -> list[str]:
     """
     Позволяет пользователю создать одну или несколько папок с произвольными именами
@@ -43,9 +44,9 @@ def add_custom_folders(
 
 
 def move_file_interactive(
-    folder_path: str,
-    input_func: Callable[[str], str] = input,
-    print_func: Callable[[str], None] = print,
+        folder_path: str,
+        input_func: Callable[[str], str] = input,
+        print_func: Callable[[str], None] = print,
 ) -> None:
     """
     Перемещает выбранные пользователем файлы из указанной папки в одну из целевых категорий.
@@ -163,9 +164,9 @@ def move_file_interactive(
 
 
 def select_base_path(
-    default_path: str,
-    input_func: Callable[[str], str] = input,
-    print_func: Callable[[str], None] = print,
+        default_path: str,
+        input_func: Callable[[str], str] = input,
+        print_func: Callable[[str], None] = print,
 ) -> str:
     """
     Запрашивает у пользователя путь к рабочей папке.
@@ -195,3 +196,6 @@ if __name__ == "__main__":
     folder_path = select_base_path(default_download_path)
     print(f"Используется папка: {folder_path}")
     move_file_interactive(folder_path)
+
+    print('Окно будет закрыто через 7 секунд')
+    time.sleep(7)
