@@ -3,6 +3,45 @@ import shutil
 from typing import Callable
 
 
+def add_custom_folders(
+    base_path: str,
+    input_func: Callable[[str], str] = input,
+    print_func: Callable[[str], None] = print,
+) -> list[str]:
+    """
+    Позволяет пользователю создать одну или несколько папок с произвольными именами
+    внутри base_path. Возвращает список созданных имен папок.
+    """
+    answer = input_func("Добавить пользовательские папки? (y/n): ").strip().lower()
+    if answer not in {"y", "yes", "д", "да"}:
+        return []
+
+    raw = input_func("Введите имена папок через запятую: ").strip()
+    if not raw:
+        print_func("Имена папок не указаны.")
+        return []
+
+    parts = [p.strip() for p in raw.split(",") if p.strip()]
+    created: list[str] = []
+    for name in parts:
+        # Простая валидация имен
+        if any(sep in name for sep in [os.sep, os.altsep] if sep):
+            print_func(f"Недопустимое имя папки (содержит разделитель пути): {name}")
+            continue
+        dst = os.path.join(base_path, name)
+        os.makedirs(dst, exist_ok=True)
+        created.append(name)
+
+    if created:
+        print_func("Созданы папки:")
+        for n in created:
+            print_func(f"- {n}")
+    else:
+        print_func("Ни одной пользовательской папки не создано.")
+
+    return created
+
+
 def move_file_interactive(
     folder_path: str,
     input_func: Callable[[str], str] = input,
@@ -19,9 +58,7 @@ def move_file_interactive(
         "1": "Images",
         "2": "Documents",
         "3": "Music",
-        "4": "Torrent files",
-        "5": "Executable files",
-        "6": "Archive files",
+        "4": "Videos",
     }
 
     # Создаем папки назначения, если их нет
@@ -72,7 +109,7 @@ def move_file_interactive(
                     print_func(f"Номер вне допустимых границ: {p}")
                     return
                 selected_indices.append(idx - 1)
-        # Удаляем дубликаты, сохраняя порядок
+        # Удаляем дубликаты, сохраная порядок
         seen = set()
         selected_indices = [x for x in selected_indices if not (x in seen or seen.add(x))]
 
@@ -82,15 +119,17 @@ def move_file_interactive(
 
     selected_files = [files[i] for i in selected_indices]
 
-    print_func(
-        "Куда переместить? "
-        "1 - Images, "
-        "2 - Documents, "
-        "3 - Music, "
-        "4 - Torrent files, "
-        "5 - Executable files, "
-        "6 - Archive files"
-    )
+    # Добавляем пользовательские папки (по желанию)
+    custom_folders = add_custom_folders(folder_path, input_func, print_func)
+    next_idx = len(dest_folders) + 1
+    for name in custom_folders:
+        dest_folders[str(next_idx)] = name
+        next_idx += 1
+
+    # Вывод динамического меню назначения
+    print_func("Куда переместить?")
+    for k, v in dest_folders.items():
+        print_func(f"{k} - {v}")
     folder_num = input_func("Введите номер папки: ").strip()
 
     # Проверка на корректность номера папки
