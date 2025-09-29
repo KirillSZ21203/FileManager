@@ -9,7 +9,7 @@ def move_file_interactive(
     print_func: Callable[[str], None] = print,
 ) -> None:
     """
-    Перемещает выбранный пользователем файл из указанной папки в одну из целевых категорий.
+    Перемещает выбранные пользователем файлы из указанной папки в одну из целевых категорий.
 
     :param folder_path: Путь к папке, где находятся файлы
     :param input_func: Функция для получения пользовательского ввода (по умолчанию input)
@@ -42,9 +42,45 @@ def move_file_interactive(
     for i, file in enumerate(files, 1):
         print_func(f"{i}. {file}")
 
-    # Запрашиваем номер файла и номер папки
-    file_num = int(input_func("Выберите номер файла: ")) - 1
-    file_to_move = files[file_num]
+    # Запрашиваем номера файлов (поддержка: 1,3-5 или 'all')
+    selection_raw = input_func(
+        "Введите номера файлов (через запятую или диапазоны, например: 1,3-5, или 'all'): "
+    ).strip()
+
+    if selection_raw.lower() == "all":
+        selected_indices = list(range(len(files)))
+    else:
+        parts = [p.strip() for p in selection_raw.split(",") if p.strip()]
+        selected_indices = []
+        for p in parts:
+            if "-" in p:
+                a, b = p.split("-", 1)
+                if not a.isdigit() or not b.isdigit():
+                    print_func(f"Некорректный диапазон: {p}")
+                    return
+                start, end = int(a), int(b)
+                if start < 1 or end < 1 or start > len(files) or end > len(files) or start > end:
+                    print_func(f"Диапазон вне допустимых границ: {p}")
+                    return
+                selected_indices.extend([i - 1 for i in range(start, end + 1)])
+            else:
+                if not p.isdigit():
+                    print_func(f"Некорректный номер: {p}")
+                    return
+                idx = int(p)
+                if idx < 1 or idx > len(files):
+                    print_func(f"Номер вне допустимых границ: {p}")
+                    return
+                selected_indices.append(idx - 1)
+        # Удаляем дубликаты, сохраняя порядок
+        seen = set()
+        selected_indices = [x for x in selected_indices if not (x in seen or seen.add(x))]
+
+    if not selected_indices:
+        print_func("Не выбрано ни одного файла.")
+        return
+
+    selected_files = [files[i] for i in selected_indices]
 
     print_func(
         "Куда переместить? "
@@ -55,22 +91,40 @@ def move_file_interactive(
         "5 - Executable files, "
         "6 - Archive files"
     )
-    folder_num = "Введите номер папки: "
+    folder_num = input_func("Введите номер папки: ").strip()
 
     # Проверка на корректность номера папки
     if folder_num not in dest_folders:
-        raise KeyError(f"Неверный номер папки: {folder_num}")
+        print_func(f"Неверный номер папки: {folder_num}")
+        return
 
-    # Перемещаем файл
-    source = os.path.join(folder_path, file_to_move)
-    destination = os.path.join(folder_path, dest_folders[folder_num], file_to_move)
-    shutil.move(source, destination)
+    def unique_destination_path(dst_dir: str, filename: str) -> str:
+        base, ext = os.path.splitext(filename)
+        candidate = os.path.join(dst_dir, filename)
+        counter = 1
+        while os.path.exists(candidate):
+            candidate = os.path.join(dst_dir, f"{base} ({counter}){ext}")
+            counter += 1
+        return candidate
 
-    print_func(f"Файл {file_to_move} перемещен в {dest_folders[folder_num]}")
+    # Перемещаем выбранные файлы
+    dst_dir = os.path.join(folder_path, dest_folders[folder_num])
+    os.makedirs(dst_dir, exist_ok=True)
+
+    moved = []
+    for fname in selected_files:
+        source = os.path.join(folder_path, fname)
+        destination = unique_destination_path(dst_dir, fname)
+        shutil.move(source, destination)
+        moved.append(os.path.basename(destination))
+
+    print_func(f"Перемещено файлов: {len(moved)}")
+    for nm in moved:
+        print_func(f"- {nm} -> {dest_folders[folder_num]}")
 
 
 if __name__ == "__main__":
     # Пример: путь по умолчанию — загрузки текущего пользователя (можно изменить на свой путь)
-    default_download_path = os.path.join(os.path.expanduser("~"), "Downloads")
+    default_download_path = os.path.join(os.path.expanduser("~"), "Desktop")
     print(f"Используется папка: {default_download_path}")
     move_file_interactive(default_download_path)
