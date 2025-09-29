@@ -195,7 +195,13 @@ if __name__ == "__main__":
     default_download_path = os.path.join(os.path.expanduser("~"), "Desktop")
     folder_path = select_base_path(default_download_path)
     print(f"Используется папка: {folder_path}")
-    move_file_interactive(folder_path)
+
+    while True:
+        move_file_interactive(folder_path)
+        ans = input("Выполнить ещё перенос? (y/n): ").strip().lower()
+        if ans not in {"y", "yes", "д", "да"}:
+            break
 
     print('Окно будет закрыто через 7 секунд')
     time.sleep(7)
+    
