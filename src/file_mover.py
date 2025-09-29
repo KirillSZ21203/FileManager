@@ -109,7 +109,7 @@ def move_file_interactive(
                     print_func(f"Номер вне допустимых границ: {p}")
                     return
                 selected_indices.append(idx - 1)
-        # Удаляем дубликаты, сохраная порядок
+        # Удаляем дубликаты, сохраняя порядок
         seen = set()
         selected_indices = [x for x in selected_indices if not (x in seen or seen.add(x))]
 
@@ -162,8 +162,36 @@ def move_file_interactive(
         print_func(f"- {nm} -> {dest_folders[folder_num]}")
 
 
+def select_base_path(
+    default_path: str,
+    input_func: Callable[[str], str] = input,
+    print_func: Callable[[str], None] = print,
+) -> str:
+    """
+    Запрашивает у пользователя путь к рабочей папке.
+    Предлагает путь по умолчанию, создаёт папку при согласии, если её нет.
+    """
+    while True:
+        print_func(f"Папка по умолчанию: {default_path}")
+        raw = input_func("Введите путь к папке (Enter — использовать по умолчанию): ").strip()
+        path = raw or default_path
+        path = os.path.abspath(os.path.expanduser(path))
+
+        if os.path.isdir(path):
+            return path
+
+        ans = input_func(f"Папка не существует: {path}. Создать? (y/n): ").strip().lower()
+        if ans in {"y", "yes", "д", "да"}:
+            try:
+                os.makedirs(path, exist_ok=True)
+                return path
+            except OSError as e:
+                print_func(f"Не удалось создать папку: {e}")
+        # иначе — повторяем запрос
+
+
 if __name__ == "__main__":
-    # Пример: путь по умолчанию — загрузки текущего пользователя (можно изменить на свой путь)
     default_download_path = os.path.join(os.path.expanduser("~"), "Desktop")
-    print(f"Используется папка: {default_download_path}")
-    move_file_interactive(default_download_path)
+    folder_path = select_base_path(default_download_path)
+    print(f"Используется папка: {folder_path}")
+    move_file_interactive(folder_path)
